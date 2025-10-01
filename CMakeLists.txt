@@ -13,7 +13,7 @@ if (PROJECT_IS_TOP_LEVEL)
     include(FetchContent)
     FetchContent_Declare(
         cfmt
-        GIT_REPOSITORY git@gitlab.com:44100Hz/coformat.git
+        GIT_REPOSITORY https://github.com/dsvi/coformat.git
         GIT_TAG main
     )
     FetchContent_MakeAvailable(cfmt)
