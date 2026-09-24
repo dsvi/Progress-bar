@@ -45,7 +45,7 @@ jobs:
             c_compiler: cl
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v5
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -73,3 +73,30 @@ jobs:
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
       run: ctest --build-config ${{ matrix.build_type }}
+
+  build-musl:
+    # Build on musl libc (Alpine container) to cover musl-targeted builds.
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:latest
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Install build dependencies
+      # Alpine ships without bash, so install it via /bin/sh first.
+      shell: sh
+      run: apk add --no-cache bash cmake g++ make git
+
+    - name: Configure CMake
+      run: >
+        cmake -B "$GITHUB_WORKSPACE/build"
+        -DCMAKE_BUILD_TYPE=Release
+        -S "$GITHUB_WORKSPACE"
+
+    - name: Build
+      run: cmake --build "$GITHUB_WORKSPACE/build" --config Release
+
+    - name: Test
+      # In container jobs $GITHUB_WORKSPACE points at the in-container workspace,
+      # unlike the github.workspace context, which expands to the host path.
+      run: ctest --test-dir "$GITHUB_WORKSPACE/build" --build-config Release

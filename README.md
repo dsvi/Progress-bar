@@ -20,5 +20,13 @@ for (int i = bar.min; i < bar.max; ++i) {
 }
 cprintln("And disappears at the end.");
 ```
+Supports Unixes and Windows.
 
-To use, just copy it over to your project. It only depends on `coformat` library.
+To use, just copy it over to your project. It only depends on [`coformat`](https://github.com/dsvi/coformat/tree/main) library.
+
+Or you can add it to your `CMakeLists.txt` through [`CPM.cmake`](https://github.com/cpm-cmake/cpm.cmake)
+
+```cmake
+CPMAddPackage("gh:dsvi/coformat#main")
+CPMAddPackage("gh:dsvi/progress-bar#main")
+```

@@ -1,5 +1,6 @@
-#include "progress_bar.h"
+#include <coformat.h>
 #include <cassert>
+#include "progress_bar.h"
 
 using namespace std;
 using namespace coformat;
@@ -8,20 +9,34 @@ Progress_bar::Progress_bar()
 {
 }
 
-void Progress_bar::update(uint progress)
+static
+void append(std::string &to, const std::string &from, unsigned times){
+	while (times--)
+		to += from;	
+}
+
+void Progress_bar::update(uint64_t progress)
 {
 	if (!is_colorized())
 		return;
-	assert(min <= progress and progress < max);
+	if (progress == 0){
+		current_percent = 0;
+		percent_str = "0";
+		bar.clear();
+		show();		
+		return;
+	}
+	assert(min < max); // since progress is non 0
+	assert(min <= progress and progress <= max);
 	auto new_percent = (progress - min)*100/(max - min);
 	if (current_percent == new_percent)
 		return;
 	current_percent = new_percent;
 	percent_str = to_string(current_percent);
-	auto bar_len = (progress - min)*width/(max - min);
-	bar.clear();
-	while (bar_len--)
-		bar += bar_filled;
+	bar.clear();	
+	auto bar_progress_len = (progress - min)*width/(max - min);
+	append(bar, bar_filled, bar_progress_len);
+	append(bar, bar_empty,  width - bar_progress_len);
 	show();
 }
 
@@ -29,8 +44,8 @@ void Progress_bar::show()
 {
 	if (!is_colorized())
 		return;
-	if (format_str.empty())
-		format_str = format("{{fy}}{{:{}<{}}}{{fd}} {{}}%", bar_empty, width);
-	cprintln(format_str, bar, percent_str);
+	if (bar.empty())
+		append(bar, bar_empty, width);
+	cprintln("{fy}{}{fd} {}%", bar, percent_str);
 	clear_previous_line();
 }
